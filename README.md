@@ -47,7 +47,7 @@ It then streams the torrent via HTTP (along with its subtitles) and plays it wit
 * 🤖 Built-in torrent streaming client via HTTP (refined from [`go-peerflix`](https://github.com/Sioro-Neoku/go-peerflix))
 * 🔰 Watch the video while it is being downloaded
 * 🔎 Query multiple providers in a single search
-* 🚀 Sorted results from 7 different providers at once 
+* 🚀 Sorted results from 7 different providers at once
 * 📄 Along with subtitles fetching for the video (using [`osdb`](https://github.com/Sioro-Neoku/go-peerflix))
 
 ## Installation
@@ -69,7 +69,7 @@ Make sure you have **Go 1.12+** installed on your machine.
 ```shell script
 $ git clone github.com/tnychn/torrodle.git
 $ cd torrodle
-$ go build cmd/torrodle/main.go
+$ go build -o torrodle cmd/torrodle/main.go
 ```
 
 ## Usage
