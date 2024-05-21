@@ -3,7 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 type TorrodleConfig struct {
@@ -29,13 +29,13 @@ func InitConfig(path string) error {
 		HostPort:     8080,
 	}
 	data, _ := json.MarshalIndent(config, "", "\t")
-	err := ioutil.WriteFile(path, data, 0644)
+	err := os.WriteFile(path, data, 0o644)
 	return err
 }
 
 func LoadConfig(path string) (TorrodleConfig, error) {
 	var config TorrodleConfig
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return config, err
 	}

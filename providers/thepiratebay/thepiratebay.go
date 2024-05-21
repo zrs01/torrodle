@@ -2,7 +2,6 @@ package thepiratebay
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -29,10 +28,14 @@ func New() models.ProviderInterface {
 	provider.Name = Name
 	provider.Site = Site
 	provider.Categories = models.Categories{
-		All:   "/search/%v/%d/99/0",
-		Movie: "/search/%v/%d/99/200",
-		TV:    "/search/%v/%d/99/200",
-		Porn:  "/search/%v/%d/99/500",
+		All:   "/search.php?q=%v&all=on&search=Pirate+Search&page=%d&orderby=",
+		Movie: "/search.php?q=%v&video=on&search=Pirate+Search&page=%d&orderby=",
+		TV:    "/search.php?q=%v&video=on&search=Pirate+Search&page=%d&orderby=",
+		Porn:  "/search.php?q=%v&porn=on&search=Pirate+Search&page=%d&orderby=",
+		// All:   "/search/%v/%d/99/0",
+		// Movie: "/search/%v/%d/99/200",
+		// TV:    "/search/%v/%d/99/200",
+		// Porn:  "/search/%v/%d/99/500",
 	}
 	return provider
 }
@@ -52,27 +55,30 @@ func extractor(surl string, page int, results *[]models.Source, wg *sync.WaitGro
 	}
 	var sources []models.Source
 	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(html))
-	table := doc.Find("table#searchResult").Find("tbody")
-	table.Find("tr").Each(func(i int, tr *goquery.Selection) {
-		tds := tr.Find("td")
-		a := tds.Eq(1).Find("a.detLink")
+	ol := doc.Find("ol#torrents")
+	ol.Find("li.list-entry").Each(func(i int, li *goquery.Selection) {
+		// tds := li.Find("td")
+		// a := tds.Eq(1).Find("a.detLink")
 		// title
-		title := a.Text()
+		title := li.Find("span.list-item.item-name.item-title a").Text()
 		// seeders
-		s := tds.Eq(2).Text()
+		// s := tds.Eq(2).Text()
+		s := li.Find("span.list-item.item-seed").Text()
 		seeders, _ := strconv.Atoi(strings.TrimSpace(s))
 		// leechers
-		l := tds.Eq(3).Text()
+		// l := tds.Eq(3).Text()
+		l := li.Find("span.list-item.item-leech").Text()
 		leechers, _ := strconv.Atoi(strings.TrimSpace(l))
 		// filesize
-		re := regexp.MustCompile(`Size\s(.*?),`)
-		text := tds.Eq(1).Find("font").Text()
-		fs := re.FindStringSubmatch(text)[1]
+		// re := regexp.MustCompile(`Size\s(.*?),`)
+		// text := tds.Eq(1).Find("font").Text()
+		// fs := re.FindStringSubmatch(text)[1]
+		fs := li.Find("span.list-item.item-size").Text()
 		filesize, _ := humanize.ParseBytes(strings.TrimSpace(fs)) // convert human words to bytes number
 		// url
-		URL, _ := a.Attr("href")
+		URL, _ := li.Find("span.list-item.item-name.item-title a").Eq(0).Attr("href")
 		// magnet
-		magnet, _ := tds.Eq(1).Find(`a[title="Download this torrent using magnet"]`).Attr("href")
+		magnet, _ := li.Find(`span.item-icons a`).Eq(0).Attr("href")
 		// ---
 		source := models.Source{
 			From:     "ThePirateBay",

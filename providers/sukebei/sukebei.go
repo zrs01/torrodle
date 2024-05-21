@@ -53,7 +53,7 @@ func extractor(surl string, page int, results *[]models.Source, wg *sync.WaitGro
 	table := doc.Find("table.table.table-bordered.table-hover.table-striped.torrent-list")
 	table.Find("tr.default").Each(func(i int, tr *goquery.Selection) {
 		tds := tr.Find("td.text-center")
-		a := tr.Find("td[colspan]")
+		a := tr.Find("td[colspan] a")
 		// title
 		title := a.Text()
 		// seeders

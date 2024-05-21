@@ -27,13 +27,17 @@ import (
 
 const version = "1.0.4"
 
-var u, _ = user.Current()
-var home = u.HomeDir
-var configFile = filepath.Join(home, ".torrodle.json")
-var configurations config.TorrodleConfig
+var (
+	u, _           = user.Current()
+	home           = u.HomeDir
+	configFile     = filepath.Join(home, ".torrodle.json")
+	configurations config.TorrodleConfig
+)
 
-var dataDir string
-var subtitlesDir string
+var (
+	dataDir      string
+	subtitlesDir string
+)
 
 func errorPrint(arg ...interface{}) {
 	c := color.New(color.FgHiRed).Add(color.Bold)
@@ -127,16 +131,17 @@ func chooseResults(results []models.Source) string {
 		tablewriter.Colors{tablewriter.FgHiRedColor},
 		tablewriter.Colors{tablewriter.FgHiCyanColor},
 	)
+	maxlen := 100
 	for i, result := range results {
 		title := strings.TrimSpace(result.Title)
 		isEng := utf8.RuneCountInString(title) == len(title)
 		if isEng {
-			if len(title) > 45 {
-				title = title[:42] + "..."
+			if len(title) > maxlen {
+				title = title[:maxlen-3] + "..."
 			}
 		} else {
-			if utf8.RuneCountInString(title) > 25 {
-				title = string([]rune(title)[:22]) + "..."
+			if utf8.RuneCountInString(title) > (maxlen - 20) {
+				title = string([]rune(title)[:(maxlen-23)]) + "..."
 			}
 		}
 		table.Append([]string{strconv.Itoa(i + 1), title, strconv.Itoa(result.Seeders), strconv.Itoa(result.Leechers), humanize.Bytes(uint64(result.FileSize))})
@@ -260,7 +265,7 @@ func getSubtitles(query string) (subtitlePath string) {
 		Message: "Need subtitles?",
 	}
 	_ = survey.AskOne(prompt, &need, nil)
-	if need == false {
+	if !need {
 		return
 	}
 	// pick subtitle languages
@@ -388,10 +393,10 @@ func init() {
 	subtitlesDir = filepath.Join(dataDir, "subtitles")
 
 	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-		_ = os.Mkdir(dataDir, 0700)
+		_ = os.Mkdir(dataDir, 0o700)
 	}
 	if _, err := os.Stat(subtitlesDir); os.IsNotExist(err) {
-		_ = os.Mkdir(subtitlesDir, 0700)
+		_ = os.Mkdir(subtitlesDir, 0o700)
 	}
 
 	logrus.SetFormatter(&logrus.TextFormatter{
@@ -400,7 +405,7 @@ func init() {
 		DisableLevelTruncation: false,
 	})
 	logrus.SetOutput(os.Stdout)
-	if configurations.Debug == true {
+	if configurations.Debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	} else {
 		logrus.SetLevel(logrus.ErrorLevel)
@@ -409,10 +414,9 @@ func init() {
 
 func main() {
 	name := color.HiYellowString("[torrodle v%s]", version)
-	banner :=
-		`
-	_____                          ______________     
-	__  /________________________________  /__  /____ 
+	banner := `
+	_____                          ______________
+	__  /________________________________  /__  /____
 	_  __/  __ \_  ___/_  ___/  __ \  __  /__  /_  _ \
 	/ /_ / /_/ /  /   _  /   / /_/ / /_/ / _  / /  __/
 	\__/ \____//_/    /_/    \____/\__,_/  /_/  \___/
